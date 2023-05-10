@@ -24,8 +24,16 @@ while getopts "hv" OPT; do
 done
 
 DATA_FILE="./data.txt"
+APP_NAME="Git Repository Manager"
 # Create data.txt file if doesn't exist
 touch -a "$DATA_FILE"
+
+displayError () {
+  if [[ ! -z $1 ]]
+  then
+    zenity --title "$APP_NAME" --error --text="$1"
+  fi
+}
 
 while [[ true ]]; do
   OPTION=$(zenity --list --column=Menu List Import)
@@ -40,17 +48,17 @@ while [[ true ]]; do
       ;;
 
     "Import")
-      DIR=$(zenity --file-selection --directory)
-      if [[ ! -z $DIR ]]
+      DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
+      if [[ ! -z $DIR && $? -eq 0 ]]
       then
         # Check if git repository exists and silence output
         git -C $DIR status &> /dev/null
         if [[ $? -ne 0 ]]
         then
-          zenity --error --text="$DIR does not contain git repository."
+          displayError "$DIR does not contain git repository."
         elif grep -q $DIR $DATA_FILE
         then
-          zenity --error --text="$DIR is already imported."
+          displayError "$DIR is already imported."
         else
           echo $DIR >> $DATA_FILE
         fi
