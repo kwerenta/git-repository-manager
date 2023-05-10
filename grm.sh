@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023r.
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 10.05.2023r. 
-# Version          : 0.1.1
+# Version          : 0.1.2
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -12,7 +12,7 @@ while getopts "hv" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.1.1"
+      echo "Version  : 0.1.2"
       exit 0
       ;;
     h)
@@ -26,6 +26,7 @@ done
 ROOT_FOLDER=$(dirname -- "$0")
 DATA_FILE="$ROOT_FOLDER/data.txt"
 APP_NAME="Git Repository Manager"
+
 # Create data.txt file if doesn't exist
 touch -a "$DATA_FILE"
 
@@ -48,8 +49,13 @@ while [[ true ]]; do
       while read LINE; do
         DATA+=("$LINE")
         DATA+=($(echo $LINE | grep -o '[^/]*$'))
+        DATA+=($(git -C "$LINE" branch --show-current))
+        DATA+=($(git -C "$LINE" status -s | wc -l))
+        DATA+=($(du -hs "$LINE" | grep -o '[0-9]*[K,M,G,T,P,E,Z,Y]'))
       done < $DATA_FILE
-      SELECTED=$(zenity --list --column=Path --print-column=1 --hide-column=1 --column=Name ${DATA[@]})
+
+      SELECTED=$(zenity --list --column=Path --print-column=1 --hide-column=1 --column=Name --column=Branch --column="Uncommited files" --column=Size ${DATA[@]})
+      
       if [[ $? -eq 0 ]]
       then
         cd "$SELECTED"
