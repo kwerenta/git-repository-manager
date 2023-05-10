@@ -28,7 +28,7 @@ DATA_FILE="./data.txt"
 touch -a "$DATA_FILE"
 
 while [[ true ]]; do
-  OPTION=$(zenity --list --column=Menu "List")
+  OPTION=$(zenity --list --column=Menu List Import)
   if [[ $? -eq 1 ]]
   then
     exit 0
@@ -37,6 +37,24 @@ while [[ true ]]; do
   case $OPTION in
     "List")
       zenity --list --column=Repositories $(grep -o '[^/]*$' $DATA_FILE)
+      ;;
+
+    "Import")
+      DIR=$(zenity --file-selection --directory)
+      if [[ ! -z $DIR ]]
+      then
+        # Check if git repository exists and silence output
+        git -C $DIR status &> /dev/null
+        if [[ $? -ne 0 ]]
+        then
+          zenity --error --text="$DIR does not contain git repository."
+        elif grep -q $DIR $DATA_FILE
+        then
+          zenity --error --text="$DIR is already imported."
+        else
+          echo $DIR >> $DATA_FILE
+        fi
+      fi
       ;;
   esac
 done
