@@ -22,3 +22,21 @@ while getopts "hv" OPT; do
       ;;
   esac
 done
+
+DATA_FILE="./data.txt"
+# Create data.txt file if doesn't exist
+touch -a "$DATA_FILE"
+
+while [[ true ]]; do
+  OPTION=$(zenity --list --column=Menu "List")
+  if [[ $? -eq 1 ]]
+  then
+    exit 0
+  fi
+
+  case $OPTION in
+    "List")
+      zenity --list --column=Repositories $(grep -o '[^/]*$' $DATA_FILE)
+      ;;
+  esac
+done
