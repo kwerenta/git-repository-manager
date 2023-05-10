@@ -36,7 +36,7 @@ displayError () {
 }
 
 while [[ true ]]; do
-  OPTION=$(zenity --list --column=Menu List Import)
+  OPTION=$(zenity --list --column=Menu List Import Create)
   if [[ $? -eq 1 ]]
   then
     exit 0
@@ -63,6 +63,20 @@ while [[ true ]]; do
           echo $DIR >> $DATA_FILE
         fi
       fi
+      ;;
+
+      "Create")
+        DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
+        NAME=$(zenity --title "$APP_NAME" --entry --text "Enter repository name:")
+
+        # TODO: Add input validation and check for permissions
+        if [[ ! -z $NAME && $? -eq 0 ]]
+        then
+          DIR="$DIR/$NAME"
+          mkdir $DIR
+          git -C $DIR init &> /dev/null
+          echo $DIR >> $DATA_FILE
+        fi
       ;;
   esac
 done
