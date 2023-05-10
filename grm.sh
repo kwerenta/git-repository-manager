@@ -44,7 +44,16 @@ while [[ true ]]; do
 
   case $OPTION in
     "List")
-      zenity --list --column=Repositories $(grep -o '[^/]*$' $DATA_FILE)
+      while read LINE; do
+        DATA+=("$LINE")
+        DATA+=($(echo $LINE | grep -o '[^/]*$'))
+      done < $DATA_FILE
+      SELECTED=$(zenity --list --column=Path --print-column=1 --hide-column=1 --column=Name ${DATA[@]})
+      if [[ $? -eq 0 ]]
+      then
+        cd "$SELECTED"
+        $SHELL
+      fi
       ;;
 
     "Import")
