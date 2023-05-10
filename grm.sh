@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023r.
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 10.05.2023r. 
-# Version          : 0.1.0
+# Version          : 0.1.1
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -12,7 +12,7 @@ while getopts "hv" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.1.0"
+      echo "Version  : 0.1.1"
       exit 0
       ;;
     h)
@@ -23,7 +23,8 @@ while getopts "hv" OPT; do
   esac
 done
 
-DATA_FILE="./data.txt"
+ROOT_FOLDER=$(dirname -- "$0")
+DATA_FILE="$ROOT_FOLDER/data.txt"
 APP_NAME="Git Repository Manager"
 # Create data.txt file if doesn't exist
 touch -a "$DATA_FILE"
