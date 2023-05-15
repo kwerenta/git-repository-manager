@@ -1,10 +1,10 @@
 #!/bin/bash
 # Name             : Git Repository Manager
 # Author           : Kamil Wenta (193437)
-# Created On       : 10.05.2023r.
+# Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
-# Last Modified On : 10.05.2023r. 
-# Version          : 0.1.2
+# Last Modified On : 15.05.2023 
+# Version          : 0.2.0
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -64,19 +64,50 @@ while [[ true ]]; do
       ;;
 
     "Import")
-      DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
-      if [[ ! -z $DIR && $? -eq 0 ]]
+      SOURCE=$(zenity --list --title "$APP_NAME" --radiolist --column "ID" --column="Name" 1 Local 2 Remote)
+      if [ "$SOURCE" = "Local" ]
       then
-        # Check if git repository exists and silence output
-        git -C $DIR status &> /dev/null
-        if [[ $? -ne 0 ]]
+        DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
+        if [[ ! -z $DIR && $? -eq 0 ]]
         then
-          displayError "$DIR does not contain git repository."
-        elif grep -q $DIR $DATA_FILE
+          # Check if git repository exists and silence output
+          git -C $DIR status &> /dev/null
+          if [[ $? -ne 0 ]]
+          then
+            displayError "$DIR does not contain git repository."
+          elif grep -q $DIR $DATA_FILE
+          then
+            displayError "$DIR is already imported."
+          else
+            echo $DIR >> $DATA_FILE
+          fi
+        fi
+      elif [ "$SOURCE" = "Remote" ]
+      then
+        URL=$(zenity --title "$APP_NAME" --entry --text "Enter remote repository URL:")
+        if echo "$URL" | grep -Eq "[A-Za-z0-9][A-Za-z0-9+.-]*"
         then
-          displayError "$DIR is already imported."
+          DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
+          if [[ ! -z $DIR && $? -eq 0 ]]
+          then
+            # Check if git repository exists and silence output
+            git -C $DIR status &> /dev/null
+            if [[ $? -ne 0 ]]
+            then
+              git clone "$URL" "$DIR" &> /dev/null
+              if [[ $? -ne 0 ]]
+              then
+                displayError "Failed to import repository from $URL."
+              else
+                echo $DIR >> $DATA_FILE
+                zenity --title "$APP_NAME" --info --text="Successfully imported repository from $URL."
+              fi
+            else
+              displayError "$DIR already contains git repository."
+            fi
+          fi
         else
-          echo $DIR >> $DATA_FILE
+          displayError "Invalid URL."
         fi
       fi
       ;;
