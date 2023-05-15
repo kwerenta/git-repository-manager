@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.2.0
+# Version          : 0.2.1
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -30,11 +30,19 @@ APP_NAME="Git Repository Manager"
 # Create data.txt file if doesn't exist
 touch -a "$DATA_FILE"
 
-displayError () {
-  if [[ ! -z $1 ]]
+displayDialog () {
+  if [[ ! -z $1 || ! -z $2 ]]
   then
-    zenity --title "$APP_NAME" --error --text="$1"
+    zenity --title "$APP_NAME" --"$1" --text="$2"
   fi
+}
+
+displayError () {
+  displayDialog "error" "$1"
+}
+
+displayInfo () {
+  displayDialog "info" "$1"
 }
 
 while [[ true ]]; do
@@ -100,7 +108,7 @@ while [[ true ]]; do
                 displayError "Failed to import repository from $URL."
               else
                 echo $DIR >> $DATA_FILE
-                zenity --title "$APP_NAME" --info --text="Successfully imported repository from $URL."
+                displayInfo "Successfully imported repository from $URL."
               fi
             else
               displayError "$DIR already contains git repository."
@@ -123,6 +131,7 @@ while [[ true ]]; do
           mkdir $DIR
           git -C $DIR init &> /dev/null
           echo $DIR >> $DATA_FILE
+          displayInfo "Successfully created repository."
         fi
       ;;
   esac
