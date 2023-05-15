@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.3.2
+# Version          : 0.3.3
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -12,7 +12,7 @@ while getopts "hv" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.3.2"
+      echo "Version  : 0.3.3"
       exit 0
       ;;
     h)
@@ -101,6 +101,7 @@ while [[ true ]]; do
             displayError "$DIR is already imported."
           else
             echo $DIR >> $DATA_FILE
+            displayInfo "Successfully imported repository from $DIR."
           fi
         fi
       elif [ "$SOURCE" = "Remote" ]
