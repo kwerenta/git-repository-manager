@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.3.0
+# Version          : 0.3.1
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -12,7 +12,7 @@ while getopts "hv" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.3.0"
+      echo "Version  : 0.3.1"
       exit 0
       ;;
     h)
@@ -45,6 +45,17 @@ displayInfo () {
   displayDialog "info" "$1"
 }
 
+showOptionMenu () {
+  MENU=()
+  I=1
+  for NAME in "$@"
+  do
+    MENU+=($I $NAME)
+    I=$((I+1))
+  done
+  echo $(zenity --list --title "$APP_NAME" --radiolist --column "ID" --column="Name" ${MENU[@]})
+}
+
 while [[ true ]]; do
   OPTION=$(zenity --list --column=Menu List Import Create "Edit global config")
   if [[ $? -eq 1 ]]
@@ -72,7 +83,7 @@ while [[ true ]]; do
       ;;
 
     "Import")
-      SOURCE=$(zenity --list --title "$APP_NAME" --radiolist --column "ID" --column="Name" 1 Local 2 Remote)
+      SOURCE=$(showOptionMenu "Local" "Remote")
       if [ "$SOURCE" = "Local" ]
       then
         DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
@@ -156,7 +167,7 @@ while [[ true ]]; do
               displayError "Failed to add new config variable."
             fi
           else
-            OPERATION=$(zenity --list --title "$APP_NAME" --radiolist --column "ID" --column="Operation" 1 Edit 2 Unset)
+            OPERATION=$(showOptionMenu "Edit" "Unset")
             if [ "$OPERATION" = "Edit" ]; then
               VALUE=$(zenity --title "$APP_NAME" --entry --text "Enter new config variable value:")
               if git config --global "$NAME" "$VALUE" &> /dev/null; then
