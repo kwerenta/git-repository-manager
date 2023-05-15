@@ -6,5 +6,6 @@ GUI to manage git repositories and more
 
 - Listing all imported repositories (current branch, uncommited files, size)
 - Creating repositories
-- Importing locally existing repositories
+- Importing locally and remotely existing repositories
 - Going to repository directory
+- Editing global git config

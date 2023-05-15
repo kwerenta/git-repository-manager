@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.2.1
+# Version          : 0.3.0
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -12,7 +12,7 @@ while getopts "hv" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.1.2"
+      echo "Version  : 0.3.0"
       exit 0
       ;;
     h)
@@ -46,7 +46,7 @@ displayInfo () {
 }
 
 while [[ true ]]; do
-  OPTION=$(zenity --list --column=Menu List Import Create)
+  OPTION=$(zenity --list --column=Menu List Import Create "Edit global config")
   if [[ $? -eq 1 ]]
   then
     exit 0
@@ -132,6 +132,46 @@ while [[ true ]]; do
           git -C $DIR init &> /dev/null
           echo $DIR >> $DATA_FILE
           displayInfo "Successfully created repository."
+        fi
+      ;;
+
+      "Edit global config")
+        TMP=$(mktemp)
+        git config --global -l > $TMP
+        DATA=()
+        while read LINE; do
+          DATA+=($(echo "$LINE" | cut -d= -f1))
+          DATA+=($(echo "$LINE" | cut -d= -f2))
+        done < $TMP
+        DATA+=("Add new")
+        NAME=$(zenity --list --column=Name --column=Value ${DATA[@]})
+        if [[ $? -eq 0 ]]; then
+          if [ "$NAME" = "Add" ]; then
+            NAME=$(zenity --title "$APP_NAME" --entry --text "Enter config variable name:")
+            VALUE=$(zenity --title "$APP_NAME" --entry --text "Enter config variable value:")
+            # Check if variable already exists
+            if ! git config --global --get "$NAME" &> /dev/null && git config --global --add "$NAME" "$VALUE" &> /dev/null; then
+              displayInfo "Successfully added new config variable."
+            else
+              displayError "Failed to add new config variable."
+            fi
+          else
+            OPERATION=$(zenity --list --title "$APP_NAME" --radiolist --column "ID" --column="Operation" 1 Edit 2 Unset)
+            if [ "$OPERATION" = "Edit" ]; then
+              VALUE=$(zenity --title "$APP_NAME" --entry --text "Enter new config variable value:")
+              if git config --global "$NAME" "$VALUE" &> /dev/null; then
+                displayInfo "Successfully changed config variable value."
+              else
+                displayError "Failed to change config variable value."
+              fi
+            else
+              if git config --global --unset "$NAME" &> /dev/null; then
+                displayInfo "Successfully unsetted config variable."
+              else
+                displayError "Failed to unset config variable."
+              fi
+            fi
+          fi
         fi
       ;;
   esac
