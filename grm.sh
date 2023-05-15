@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.3.1
+# Version          : 0.3.2
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -12,7 +12,7 @@ while getopts "hv" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.3.1"
+      echo "Version  : 0.3.2"
       exit 0
       ;;
     h)
@@ -56,6 +56,10 @@ showOptionMenu () {
   echo $(zenity --list --title "$APP_NAME" --radiolist --column "ID" --column="Name" ${MENU[@]})
 }
 
+isThereRepository () {
+  return $(git -C $1 status &> /dev/null)
+}
+
 while [[ true ]]; do
   OPTION=$(zenity --list --column=Menu List Import Create "Edit global config")
   if [[ $? -eq 1 ]]
@@ -90,12 +94,10 @@ while [[ true ]]; do
         if [[ ! -z $DIR && $? -eq 0 ]]
         then
           # Check if git repository exists and silence output
-          git -C $DIR status &> /dev/null
-          if [[ $? -ne 0 ]]
-          then
+          if ! isThereRepository $DIR; then
             displayError "$DIR does not contain git repository."
-          elif grep -q $DIR $DATA_FILE
-          then
+          # Check if this repository is already in data file
+          elif grep -q $DIR $DATA_FILE; then
             displayError "$DIR is already imported."
           else
             echo $DIR >> $DATA_FILE
@@ -104,18 +106,11 @@ while [[ true ]]; do
       elif [ "$SOURCE" = "Remote" ]
       then
         URL=$(zenity --title "$APP_NAME" --entry --text "Enter remote repository URL:")
-        if echo "$URL" | grep -Eq "[A-Za-z0-9][A-Za-z0-9+.-]*"
-        then
+        if echo "$URL" | grep -Eq "[A-Za-z0-9][A-Za-z0-9+.-]*"; then
           DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
-          if [[ ! -z $DIR && $? -eq 0 ]]
-          then
-            # Check if git repository exists and silence output
-            git -C $DIR status &> /dev/null
-            if [[ $? -ne 0 ]]
-            then
-              git clone "$URL" "$DIR" &> /dev/null
-              if [[ $? -ne 0 ]]
-              then
+          if [[ ! -z $DIR && $? -eq 0 ]]; then
+            if ! isThereRepository $DIR; then
+              if ! git clone "$URL" "$DIR" &> /dev/null; then
                 displayError "Failed to import repository from $URL."
               else
                 echo $DIR >> $DATA_FILE
@@ -136,8 +131,7 @@ while [[ true ]]; do
         NAME=$(zenity --title "$APP_NAME" --entry --text "Enter repository name:")
 
         # TODO: Add input validation and check for permissions
-        if [[ ! -z $NAME && $? -eq 0 ]]
-        then
+        if [[ ! -z $NAME && $? -eq 0 ]]; then
           DIR="$DIR/$NAME"
           mkdir $DIR
           git -C $DIR init &> /dev/null
