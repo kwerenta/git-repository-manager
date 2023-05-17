@@ -4,29 +4,35 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.5.1
+# Version          : 0.5.2
 #
 # Description      :
 # GUI to manage git repositories and more
-while getopts "hv" OPT; do
-  case $OPT in
-    v)
-      echo "Author   : Kamil Wenta"
-      echo "Version  : 0.5.1"
-      exit 0
-      ;;
-    h)
-      echo "usage $0:"
-      echo "  -v # Shows author and version"
-      echo "  -h # Shows this help"
-      exit 0
-      ;;
-  esac
-done
-
 ROOT_FOLDER=$(dirname -- "$0")
 DATA_FILE="$ROOT_FOLDER/data.txt"
 APP_NAME="Git Repository Manager"
+
+while getopts "hvl" OPT; do
+  case $OPT in
+    v)
+      echo "Author   : Kamil Wenta"
+      echo "Version  : 0.5.2"
+      exit 0
+    ;;
+    l)
+      echo "List of imported repositories:"
+      cat $DATA_FILE
+      exit 0
+    ;;
+    h)
+      echo "usage $0:"
+      echo "  -v # Shows author and version"
+      echo "  -l # Shows list of imported repositories"
+      echo "  -h # Shows this help"
+      exit 0
+    ;;
+  esac
+done
 
 # Create data.txt file if doesn't exist
 touch -a "$DATA_FILE"
