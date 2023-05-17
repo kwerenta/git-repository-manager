@@ -9,3 +9,4 @@ GUI to manage git repositories and more
 - Importing locally and remotely existing repositories
 - Going to repository directory
 - Editing global git config
+- Editing repository .gitignore file

@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.3.4
+# Version          : 0.4.0
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -12,7 +12,7 @@ while getopts "hv" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.3.4"
+      echo "Version  : 0.4.0"
       exit 0
       ;;
     h)
@@ -62,7 +62,7 @@ isThereRepository () {
 
 repositoryMenu () {
   local REPO=$1
-  local OPTION=$(zenity --list --column=Menu "Go to directory")
+  local OPTION=$(zenity --list --column=Menu "Go to directory" "Edit .gitignore")
   if [[ $? -ne 0 ]]
   then
     return
@@ -72,6 +72,46 @@ repositoryMenu () {
     "Go to directory")
       cd "$REPO"
       $SHELL
+    ;;
+
+    "Edit .gitignore")
+      TMP=$(mktemp)
+      local GITIGNORE="$REPO/.gitignore"
+      # Hide errors if .gitignore does not exist
+      # Skip comments and empty lines
+      cat $GITIGNORE 2> /dev/null | grep -nvE "^$|^#" 1> $TMP
+      DATA=()
+      while read LINE; do
+        DATA+=($(echo "$LINE" | cut -d: -f1))
+        DATA+=($(echo "$LINE" | cut -d: -f2))
+      done < $TMP
+      DATA+=("0")
+      DATA+=("Add new")
+
+      ENTRY=$(zenity --list --column=Number --hide-column=1 --column=Entry "${DATA[@]}")
+      if [[ $? -eq 0 ]]; then
+        if [ "$ENTRY" = "0" ]; then
+          VALUE=$(zenity --entry --text="Enter .gitignore entry value:")
+          if [ -z $VALUE ]; then
+            displayError "Invalid entry."
+            return
+          fi
+          if [ ! -s $TMP ]; then
+            touch "$GITIGNORE"
+          fi
+          echo "$VALUE" >> $GITIGNORE
+        else
+          if zenity --question --text="Do you want to delete this entry from .gitignore?"; then
+            sed -i "${ENTRY}d" "$GITIGNORE"
+            if [ ! -s $GITIGNORE ]; then
+              if zenity --question --text=".gitignore is now empty, do you want to delete it?"; then
+                rm "$GITIGNORE"
+              fi
+            fi
+          fi
+        fi
+      fi
+
     ;;
   esac
 }
