@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.3.3
+# Version          : 0.3.4
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -12,7 +12,7 @@ while getopts "hv" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.3.3"
+      echo "Version  : 0.3.4"
       exit 0
       ;;
     h)
@@ -60,15 +60,32 @@ isThereRepository () {
   return $(git -C $1 status &> /dev/null)
 }
 
+repositoryMenu () {
+  local REPO=$1
+  local OPTION=$(zenity --list --column=Menu "Go to directory")
+  if [[ $? -ne 0 ]]
+  then
+    return
+  fi
+
+  case $OPTION in
+    "Go to directory")
+      cd "$REPO"
+      $SHELL
+    ;;
+  esac
+}
+
 while [[ true ]]; do
   OPTION=$(zenity --list --column=Menu List Import Create "Edit global config")
-  if [[ $? -eq 1 ]]
+  if [[ $? -ne 0 ]]
   then
     exit 0
   fi
 
   case $OPTION in
     "List")
+      DATA=()
       while read LINE; do
         DATA+=("$LINE")
         DATA+=($(echo $LINE | grep -o '[^/]*$'))
@@ -79,10 +96,9 @@ while [[ true ]]; do
 
       SELECTED=$(zenity --list --column=Path --print-column=1 --hide-column=1 --column=Name --column=Branch --column="Uncommited files" --column=Size ${DATA[@]})
       
-      if [[ $? -eq 0 ]]
+      if [[ ! -z $SELECTED && $? -eq 0 ]]
       then
-        cd "$SELECTED"
-        $SHELL
+        repositoryMenu $SELECTED
       fi
       ;;
 
@@ -93,7 +109,7 @@ while [[ true ]]; do
         DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
         if [[ ! -z $DIR && $? -eq 0 ]]
         then
-          # Check if git repository exists and silence output
+          # Check if git repository exists
           if ! isThereRepository $DIR; then
             displayError "$DIR does not contain git repository."
           # Check if this repository is already in data file
