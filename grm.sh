@@ -8,9 +8,7 @@
 #
 # Description      :
 # GUI to manage git repositories and more
-ROOT_FOLDER=$(dirname -- "$0")
-DATA_FILE="$ROOT_FOLDER/data.txt"
-APP_NAME="Git Repository Manager"
+. constants.txt
 
 while getopts "hvl" OPT; do
   case $OPT in

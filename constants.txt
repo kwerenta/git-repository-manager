@@ -1,0 +1,3 @@
+ROOT_FOLDER=$(dirname -- "$0")
+DATA_FILE="$ROOT_FOLDER/data.txt"
+APP_NAME="Git Repository Manager"
