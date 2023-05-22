@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.5.3
+# Version          : 0.5.4
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.5.3"
+      echo "Version  : 0.5.4"
       exit 0
     ;;
     l)
@@ -183,7 +183,9 @@ while [[ true ]]; do
       elif [ "$SOURCE" = "Remote" ]
       then
         URL=$(zenity --title "$APP_NAME" --entry --text "Enter remote repository URL:")
-        if echo "$URL" | grep -Eq "[A-Za-z0-9][A-Za-z0-9+.-]*"; then
+        # Pattern found here: https://stackoverflow.com/questions/3183444/check-for-valid-link-url
+        URL_PATTERN='^[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]\.[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]$'
+        if [[ $URL =~ $URL_PATTERN ]]; then
           DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
           if [[ ! -z $DIR && $? -eq 0 ]]; then
             if ! isThereRepository $DIR; then
@@ -208,8 +210,8 @@ while [[ true ]]; do
         if [[ $? -eq 0 ]]; then
           NAME=$(zenity --title "$APP_NAME" --entry --text "Enter repository name:")
           if [[ $? -eq 0 ]]; then
-            echo "$NAME" | grep -vq " "
-            if [[ ! -z $NAME && $? -eq 0 ]]; then
+            # Check if NAME is not empty and does not contain spaces
+            if [[ ! -z $NAME && ! $NAME =~ \  ]]; then
               DIR="$DIR/$NAME"
               mkdir $DIR
               git -C $DIR init &> /dev/null
