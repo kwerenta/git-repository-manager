@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.5.2
+# Version          : 0.5.3
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.5.2"
+      echo "Version  : 0.5.3"
       exit 0
     ;;
     l)
@@ -205,15 +205,20 @@ while [[ true ]]; do
 
       "Create")
         DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
-        NAME=$(zenity --title "$APP_NAME" --entry --text "Enter repository name:")
-
-        # TODO: Add input validation and check for permissions
-        if [[ ! -z $NAME && $? -eq 0 ]]; then
-          DIR="$DIR/$NAME"
-          mkdir $DIR
-          git -C $DIR init &> /dev/null
-          echo $DIR >> $DATA_FILE
-          displayInfo "Successfully created repository."
+        if [[ $? -eq 0 ]]; then
+          NAME=$(zenity --title "$APP_NAME" --entry --text "Enter repository name:")
+          if [[ $? -eq 0 ]]; then
+            echo "$NAME" | grep -vq " "
+            if [[ ! -z $NAME && $? -eq 0 ]]; then
+              DIR="$DIR/$NAME"
+              mkdir $DIR
+              git -C $DIR init &> /dev/null
+              echo $DIR >> $DATA_FILE
+              displayInfo "Successfully created repository."
+            else
+              displayError "Invalid repository name."
+            fi
+          fi
         fi
       ;;
 
