@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 22.05.2023 
-# Version          : 0.6.1
+# Version          : 0.6.2
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.6.1"
+      echo "Version  : 0.6.2"
       exit 0
     ;;
     l)
@@ -225,24 +225,26 @@ while [[ true ]]; do
       elif [ "$SOURCE" = "Remote" ]
       then
         URL=$(zenity --title "$APP_NAME" --entry --text "Enter remote repository URL:")
-        # Pattern found here: https://stackoverflow.com/questions/3183444/check-for-valid-link-url
-        URL_PATTERN='^[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]\.[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]$'
-        if [[ $URL =~ $URL_PATTERN ]]; then
-          DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
-          if [[ ! -z $DIR && $? -eq 0 ]]; then
-            if ! isThereRepository $DIR; then
-              if ! git clone "$URL" "$DIR" &> /dev/null; then
-                displayError "Failed to import repository from $URL."
+        if [[ $? -eq 0 ]]; then
+          # Pattern found here: https://stackoverflow.com/questions/3183444/check-for-valid-link-url
+          URL_PATTERN='^[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]\.[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]$'
+          if [[ $URL =~ $URL_PATTERN ]]; then
+            DIR=$(zenity --title "$APP_NAME" --file-selection --directory)
+            if [[ ! -z $DIR && $? -eq 0 ]]; then
+              if ! isThereRepository $DIR; then
+                if ! git clone "$URL" "$DIR" &> /dev/null; then
+                  displayError "Failed to import repository from $URL."
+                else
+                  echo $DIR >> $DATA_FILE
+                  displayInfo "Successfully imported repository from $URL."
+                fi
               else
-                echo $DIR >> $DATA_FILE
-                displayInfo "Successfully imported repository from $URL."
+                displayError "$DIR already contains git repository."
               fi
-            else
-              displayError "$DIR already contains git repository."
             fi
+          else
+            displayError "Invalid URL."
           fi
-        else
-          displayError "Invalid URL."
         fi
       fi
       ;;
