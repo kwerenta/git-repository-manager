@@ -8,5 +8,6 @@ GUI to manage git repositories and more
 - Creating and deleting repositories
 - Importing locally and remotely existing repositories
 - Going to repository directory
+- Creating, deleting and switching branches
 - Editing global git config
 - Editing repository .gitignore file

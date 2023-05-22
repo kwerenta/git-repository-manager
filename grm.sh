@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 22.05.2023 
-# Version          : 0.5.6
+# Version          : 0.6.0
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.5.6"
+      echo "Version  : 0.6.0"
       exit 0
     ;;
     l)
@@ -71,7 +71,7 @@ isThereRepository () {
 
 repositoryMenu () {
   local REPO=$1
-  local OPTION=$(zenity --list --column=Menu "Go to directory" "Edit .gitignore" "Delete repository")
+  local OPTION=$(zenity --list --column=Menu "Go to directory" "Edit branch" "Edit .gitignore" "Delete repository")
   if [[ $? -ne 0 ]]
   then
     return
@@ -81,6 +81,47 @@ repositoryMenu () {
     "Go to directory")
       cd "$REPO"
       $SHELL
+    ;;
+
+    "Edit branch")
+      OPERATION=$(showOptionMenu "Create" "Switch" "Delete")
+
+      TMP=$(mktemp)
+      git -C "$REPO" branch > $TMP
+      BRANCHES=()
+      while read LINE; do
+        BRANCHES+=($(echo "$LINE" | cut -d" " -f2))
+      done < $TMP
+
+      if [ "$OPERATION" = "Create" ]; then
+        NAME=$(zenity --entry --text="Enter branch name:")
+        if [ $? -eq 0 ]; then
+          if [ ! -z $NAME ]; then
+            git -C "$REPO" branch "$NAME"
+            displayInfo "Successfully created $NAME branch"
+          else
+            displayError "Invalid branch name"
+          fi
+        fi
+      elif [ "$OPERATION" = "Switch" ]; then
+        BRANCH=$(zenity --list --column=Name "${BRANCHES[@]}")
+        if [[ $? -eq 0 ]]; then
+          if git -C "$REPO" checkout "$BRANCH" &> /dev/null; then
+            displayInfo "Successfully switched branch to $BRANCH"
+          else
+            displayError "Failed to switch branch to $BRANCH"
+          fi
+        fi
+      elif [ "$OPERATION" = "Delete" ]; then
+        BRANCH=$(zenity --list --column=Name "${BRANCHES[@]}")
+        if [[ $? -eq 0 ]]; then
+          if git -C "$REPO" branch -D "$BRANCH" &> /dev/null; then
+            displayInfo "Successfully deleted branch $BRANCH"
+          else
+            displayError "Failed to delete branch $BRANCH"
+          fi
+        fi
+      fi
     ;;
 
     "Edit .gitignore")
