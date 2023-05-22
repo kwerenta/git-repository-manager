@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 15.05.2023 
-# Version          : 0.5.4
+# Version          : 0.5.5
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.5.4"
+      echo "Version  : 0.5.5"
       exit 0
     ;;
     l)
@@ -48,6 +48,10 @@ displayError () {
 
 displayInfo () {
   displayDialog "info" "$1"
+}
+
+showQuestion () {
+  return $(zenity --question --text="$1")
 }
 
 showOptionMenu () {
@@ -106,10 +110,10 @@ repositoryMenu () {
           fi
           echo "$VALUE" >> $GITIGNORE
         else
-          if zenity --question --text="Do you want to delete this entry from .gitignore?"; then
+          if showQuestion "Do you want to delete this entry from .gitignore?"; then
             sed -i "${ENTRY}d" "$GITIGNORE"
             if [ ! -s $GITIGNORE ]; then
-              if zenity --question --text=".gitignore is now empty, do you want to delete it?"; then
+              if showQuestion ".gitignore is now empty, do you want to delete it?"; then
                 rm "$GITIGNORE"
               fi
             fi
@@ -119,10 +123,10 @@ repositoryMenu () {
     ;;
 
     "Delete repository")
-      if zenity --question --text="Are you sure you want to delete git repository?"; then
+      if showQuestion "Are you sure you want to delete git repository?"; then
             rm -r "$REPO/.git"
             sed -i "\~${REPO}~d" "$DATA_FILE"
-            if zenity --question --text="Do you want to delete all files in repository folder?"; then
+            if showQuestion "Do you want to delete all files in repository folder?"; then
               rm -r "$REPO"
             fi
           fi
