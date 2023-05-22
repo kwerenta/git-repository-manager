@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 22.05.2023 
-# Version          : 0.7.0
+# Version          : 0.7.1
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.7.0"
+      echo "Version  : 0.7.1"
       exit 0
     ;;
     l)
@@ -127,9 +127,13 @@ repositoryMenu () {
         REMOTES+=("$LINE")
       done < $TMP
 
+      if [[ -z $OPERATION ]]; then
+        return
+      fi
+
       REMOTE=$(zenity --list --column=Name "${REMOTES[@]}")
 
-      if [ $? -ne 0 ]; then
+      if [[ $? -ne 0 ]]; then
         return
       fi
 
