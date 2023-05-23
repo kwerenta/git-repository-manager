@@ -3,8 +3,8 @@
 # Author           : Kamil Wenta (193437)
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
-# Last Modified On : 22.05.2023 
-# Version          : 0.7.1
+# Last Modified On : 23.05.2023 
+# Version          : 0.8.0
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.7.1"
+      echo "Version  : 0.8.0"
       exit 0
     ;;
     l)
@@ -64,7 +64,7 @@ isThereRepository () {
 
 repositoryMenu () {
   local REPO=$1
-  local OPTION=$(zenity --list --column=Menu "Go to directory" "Edit branch" "Sync with remote" "Edit .gitignore" "Delete repository")
+  local OPTION=$(zenity --list --column=Menu "Go to directory" "History" "Edit branch" "Sync with remote" "Edit .gitignore" "Delete repository")
   if [[ $? -ne 0 ]]
   then
     return
@@ -74,6 +74,48 @@ repositoryMenu () {
     "Go to directory")
       cd "$REPO"
       $SHELL
+    ;;
+
+    "History")
+      TMP=$(mktemp)
+      git -C "$REPO" log --oneline --no-decorate > $TMP
+      COMMITS=()
+      while read LINE; do
+        COMMITS+=($(echo "$LINE" | cut -d" " -f1))
+        COMMITS+=("$(echo "$LINE" | cut -d" " -f 2-)")
+      done < $TMP
+
+      COMMIT=$(zenity --list --column=ID --print-column=1 --column=Message "${COMMITS[@]}")
+      if [[ $? -ne 0 ]]; then
+        return
+      fi
+
+      OPERATION=$(showOptionMenu "Operation" "Switch" "Revert")
+      if [[ -z $OPERATION ]]; then
+        return
+      fi
+
+      if [ "$OPERATION" = "Switch" ]; then
+        if git -C "$REPO" checkout "$COMMIT" &> /dev/null; then
+          displayInfo "Successfully switched to commit $COMMIT."
+        else
+          displayError "Failed to switch to commit $COMMIT."
+        fi
+      elif [ "$OPERATION" = "Revert" ]; then
+        if git -C "$REPO" revert --no-commit "${COMMIT}..HEAD" &> /dev/null; then
+          if showQuestion "Do you want to commit reverted changes?"; then
+            if git -C "$REPO" commit -m "Revert to commit $COMMIT" &> /dev/null; then
+              displayInfo "Successfully reverted to commit $COMMIT and commited changes."
+            else
+              displayError "Failed to revert to commit $COMMIT and commit changes."
+            fi
+          else
+            displayInfo "Successfully reverted to commit $COMMIT."
+          fi
+        else
+          displayError "Failed to revert to commit $COMMIT."
+        fi
+      fi
     ;;
 
     "Edit branch")

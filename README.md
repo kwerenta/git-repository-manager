@@ -11,4 +11,6 @@ GUI to manage git repositories and more
 - Creating, deleting and switching branches
 - Synchronising with remote repositories
 - Editing global git config
+- Listing commit history
+- Switching and reverting to specific commit
 - Editing repository .gitignore file
