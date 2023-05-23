@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 23.05.2023 
-# Version          : 0.8.0
+# Version          : 0.8.1
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.8.0"
+      echo "Version  : 0.8.1"
       exit 0
     ;;
     l)
@@ -125,7 +125,7 @@ repositoryMenu () {
       git -C "$REPO" branch > $TMP
       BRANCHES=()
       while read LINE; do
-        BRANCHES+=($(echo "$LINE" | cut -d" " -f2))
+        BRANCHES+=("$(echo "$LINE" | cut -d" " -f 2-)")
       done < $TMP
 
       if [ "$OPERATION" = "Create" ]; then
@@ -260,7 +260,7 @@ while [[ true ]]; do
           if [[ -d $LINE ]]; then
             DATA+=("$LINE")
             DATA+=($(echo $LINE | grep -o '[^/]*$'))
-            DATA+=($(git -C "$LINE" branch --show-current))
+            DATA+=("$(git -C "$LINE" branch | grep ^\* | cut -d" " -f 2-)")
             DATA+=($(git -C "$LINE" status -s | wc -l))
             DATA+=($(du -hs "$LINE" | grep -o '[0-9]*[K,M,G,T,P,E,Z,Y]'))
           else
@@ -268,7 +268,7 @@ while [[ true ]]; do
           fi
         done < $DATA_FILE
 
-        SELECTED=$(zenity --list --column=Path --print-column=1 --hide-column=1 --column=Name --column=Branch --column="Uncommited files" --column=Size ${DATA[@]})
+        SELECTED=$(zenity --list --column=Path --print-column=1 --hide-column=1 --column=Name --column=Branch --column="Uncommited files" --column=Size "${DATA[@]}")
         if [[ $? -ne 0 ]]
         then
           break
