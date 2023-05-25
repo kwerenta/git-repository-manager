@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 25.05.2023 
-# Version          : 0.8.2
+# Version          : 0.8.3
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.8.2"
+      echo "Version  : 0.8.3"
       exit 0
     ;;
     l)
@@ -332,8 +332,8 @@ while [[ true ]]; do
         if [[ $? -eq 0 ]]; then
           NAME=$(zenity --title "$APP_NAME" --entry --text "Enter repository name:")
           if [[ $? -eq 0 ]]; then
-            # Check if NAME is not empty and does not contain spaces
-            if [[ ! -z $NAME && ! $NAME =~ \  ]]; then
+            # Check if NAME is not empty and does not contain invalid characters
+            if [[ ! -z $NAME && ! $NAME =~ \ |\||\;|\\|\/ ]]; then
               DIR="$DIR/$NAME"
               mkdir $DIR
               git -C $DIR init &> /dev/null
