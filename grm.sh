@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 25.05.2023 
-# Version          : 0.8.3
+# Version          : 0.8.4
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.8.3"
+      echo "Version  : 0.8.4"
       exit 0
     ;;
     l)
@@ -238,7 +238,7 @@ repositoryMenu () {
       if showQuestion "Are you sure you want to delete git repository?"; then
             rm -r "$REPO/.git"
             sed -i "\~${REPO}~d" "$DATA_FILE"
-            if showQuestion "Do you want to delete all files in repository folder?"; then
+            if showQuestion "Do you want to delete the entire repository folder?"; then
               rm -r "$REPO"
             fi
           fi
