@@ -3,8 +3,8 @@
 # Author           : Kamil Wenta (193437)
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
-# Last Modified On : 23.05.2023 
-# Version          : 0.8.1
+# Last Modified On : 25.05.2023 
+# Version          : 0.8.2
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.8.1"
+      echo "Version  : 0.8.2"
       exit 0
     ;;
     l)
@@ -72,8 +72,9 @@ repositoryMenu () {
 
   case $OPTION in
     "Go to directory")
-      cd "$REPO"
-      $SHELL
+      echo "Run following command to go to repository: "
+      echo -e "\tcd $REPO"
+      exit 0
     ;;
 
     "History")
