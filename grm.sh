@@ -4,7 +4,7 @@
 # Created On       : 10.05.2023
 # Last Modified By : Kamil Wenta (193437)
 # Last Modified On : 25.05.2023 
-# Version          : 0.8.4
+# Version          : 0.9.0
 #
 # Description      :
 # GUI to manage git repositories and more
@@ -14,7 +14,7 @@ while getopts "hvl" OPT; do
   case $OPT in
     v)
       echo "Author   : Kamil Wenta"
-      echo "Version  : 0.8.4"
+      echo "Version  : 0.9.0"
       exit 0
     ;;
     l)
@@ -64,7 +64,7 @@ isThereRepository () {
 
 repositoryMenu () {
   local REPO=$1
-  local OPTION=$(zenity --list --column=Menu "Go to directory" "History" "Edit branch" "Sync with remote" "Edit .gitignore" "Delete repository")
+  local OPTION=$(zenity --list --column=Menu "Go to directory" "History" "Edit branch" "Sync with remote" "TODO List" "Edit .gitignore" "Delete repository")
   if [[ $? -ne 0 ]]
   then
     return
@@ -195,6 +195,33 @@ repositoryMenu () {
       fi
     ;;
 
+    "TODO List")
+      LINE=$(grep $REPO $DATA_FILE)
+      TODOS=($(echo $LINE | cut -d";" -f 2- | tr ";" " "))
+      TODOS+=("Add new")
+
+      TODO=$(zenity --list --column=Task "${TODOS[@]}")
+      if [[ $? -ne 0 ]]; then
+        return
+      fi
+
+      if [ "$TODO" = "Add new" ]; then
+        TASK=$(zenity --entry --text="Enter new task: ")
+        if [[ $? -eq 0 ]]; then
+          if [[ ! -z $TASK ]]; then
+            if [[ ! $TASK =~ \; ]]; then
+              sed -i "\|${REPO}|s|$|;${TASK}|" $DATA_FILE
+              displayInfo "Successfully add new task."
+            else
+              displayError "Invalid task."  
+            fi
+          else
+            displayError "Invalid task."
+          fi
+        fi
+      fi
+    ;;
+
     "Edit .gitignore")
       TMP=$(mktemp)
       local GITIGNORE="$REPO/.gitignore"
@@ -258,12 +285,13 @@ while [[ true ]]; do
       while [[ true ]]; do
         DATA=()
         while read LINE; do
-          if [[ -d $LINE ]]; then
-            DATA+=("$LINE")
-            DATA+=($(echo $LINE | grep -o '[^/]*$'))
-            DATA+=("$(git -C "$LINE" branch | grep ^\* | cut -d" " -f 2-)")
-            DATA+=($(git -C "$LINE" status -s | wc -l))
-            DATA+=($(du -hs "$LINE" | grep -o '[0-9]*[K,M,G,T,P,E,Z,Y]'))
+          DIR=$(echo $LINE | grep -o '^[^;]*')
+          if [[ -d $DIR ]]; then
+            DATA+=("$DIR")
+            DATA+=($(echo $DIR | grep -o '[^/]*$'))
+            DATA+=("$(git -C "$DIR" branch | grep ^\* | cut -d" " -f 2-)")
+            DATA+=($(git -C "$DIR" status -s | wc -l))
+            DATA+=($(du -hs "$DIR" | grep -o '[0-9]*[K,M,G,T,P,E,Z,Y]'))
           else
             sed -i "\~${LINE}~d" "$DATA_FILE"
           fi
